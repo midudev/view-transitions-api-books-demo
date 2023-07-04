@@ -13,11 +13,18 @@ const { title } = Astro.props;
 		<meta name="description" content="Astro description">
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content="@midudev" />
+		<meta name="view-transition" content="same-origin" />
 	</head>
 	<body>
-		<slot />
+		<div id="content">
+			<slot />
+		</div>
+		<footer>
+			Basado en el trabajo de <a href='https://twitter.com/addyosmani/status/1673755274853900289?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Etweet%7Ctwtr%5Etrue'>Addy Osmani</a>
+		</footer>
 	</body>
 </html>
 <style is:global>
@@ -33,4 +40,39 @@ const { title } = Astro.props;
 		font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
 			Bitstream Vera Sans Mono, Courier New, monospace;
 	}
+
+	@keyframes fade-in {
+		from { opacity: 0; }
+	}
 </style>
+
+<script>
+	if (document.startViewTransition) {
+		window.navigation.addEventListener('navigate', (event) => {
+			const toUrl = new URL(event.destination.url)
+	
+			// es una página externa? si es así, lo ignoramos
+			if (location.origin !== toUrl.origin) return
+	
+			// si es una navegación en el mismo dominio (origen)
+			event.intercept({
+				async handler () {
+					// vamos a cargar la página de destino
+					// utilizando un fetch para obtener el HTML
+					const response = await fetch(toUrl.pathname) // /clean-code
+					const text = await response.text()
+					// quedarnos sólo con el contenido del html dentro de la etiqueta body
+					// usamos un regex para extraerlo
+					const [, data] = text.match(/<body>([\s\S]*)<\/body>/i)
+	
+					// utilizar la api de View Transition API
+					document.startViewTransition(() => {
+						// el scroll hacia arriba del todo
+						document.body.innerHTML = data
+						document.documentElement.scrollTop = 0
+					})
+				}
+			})
+		})
+	}
+</script>
