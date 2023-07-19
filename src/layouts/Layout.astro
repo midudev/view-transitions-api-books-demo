@@ -64,11 +64,13 @@ const { title } = Astro.props;
 					// quedarnos sólo con el contenido del html dentro de la etiqueta body
 					// usamos un regex para extraerlo
 					const [, data] = text.match(/<body>([\s\S]*)<\/body>/i)
+					const [, title] = text.match(/<title>([\s\S]*)<\/title>/i)
 	
 					// utilizar la api de View Transition API
 					document.startViewTransition(() => {
 						// el scroll hacia arriba del todo
 						document.body.innerHTML = data
+						document.title = title
 						document.documentElement.scrollTop = 0
 					})
 				}
